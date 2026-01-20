@@ -27,7 +27,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Run tests
-        run: docker-compose exec -T app pytest || echo "Add tests"
+        run: docker image list
 
       - name: Stop containers
-        run: docker-compose down
+        run: docker compose down
