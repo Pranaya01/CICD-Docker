@@ -1,6 +1,11 @@
 from fastapi.testclient import TestClient
-from app import app
+from unittest.mock import MagicMock
+from app import app, get_db
 
+def mock_get_db():
+    return MagicMock()
+
+app.dependency_overrides[get_db] = mock_get_db
 client = TestClient(app)
 
 def test_read_root():
