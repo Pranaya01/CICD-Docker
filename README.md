@@ -1,6 +1,6 @@
 # Docker Demo
 
-## Setup
+## Local Development Setup
 
 1. Copy `.env.example` to `.env`:
    ```bash
@@ -14,10 +14,33 @@
    docker-compose up --build
    ```
 
-## CI/CD Setup
+## CI/CD Setup (GitHub Actions)
 
-Add these secrets in GitHub repository settings (Settings → Secrets → Actions):
+No `.env` file needed! Add these secrets in GitHub repository settings (Settings → Secrets → Actions):
 
+### Database Secrets
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `POSTGRES_DB`
+
+### SonarQube Secrets
+- `SONAR_TOKEN` - Get from https://sonarcloud.io
+- `SONAR_HOST_URL` - Set to `https://sonarcloud.io`
+
+### Docker Hub Secrets
+- `DOCKER_USERNAME` - Your Docker Hub username
+- `DOCKER_PASSWORD` - Docker Hub access token (create at https://hub.docker.com/settings/security)
+
+### SonarCloud Setup
+1. Sign in to https://sonarcloud.io with GitHub
+2. Import your repository
+3. Update `sonar-project.properties` with your projectKey and organization
+
+### Pipeline Features
+- ✅ Code quality analysis (SonarQube)
+- ✅ Container vulnerability scanning (Trivy)
+- ✅ Automated Docker builds
+- ✅ Docker Hub image publishing
+- ✅ Security alerts in GitHub Security tab
+
+Secrets are passed directly to docker-compose as environment variables in the workflow.

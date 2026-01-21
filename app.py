@@ -12,7 +12,7 @@ Base = declarative_base()
 
 # Database model
 class Item(Base):
-    __tablename__ = "items"
+    _tablename_ = "items"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     description = Column(String)
@@ -48,4 +48,3 @@ def create_item(name: str, description: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(item)
     return {"id": item.id, "name": item.name, "description": item.description}
- 
