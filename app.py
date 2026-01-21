@@ -12,7 +12,7 @@ Base = declarative_base()
 
 # Database model
 class Item(Base):
-    __tablename__ = "items"
+    _tablename_ = "items"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     description = Column(String)
