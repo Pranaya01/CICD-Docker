@@ -44,7 +44,6 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest --cov=. --cov-report=xml --cov-report=html --junitxml=pytest-report.xml
-        continue-on-error: true
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
@@ -57,7 +56,6 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        continue-on-error: true
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -99,19 +97,26 @@ jobs:
           docker compose exec -T app pytest tests/integration/ || true
         continue-on-error: true
 
-      - name: Run Trivy vulnerability scanner
-        id: get-image
-        run: |
-          IMAGE_NAME=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "docker-demo.*app" | head -1)
-          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $(pwd):/output \
-            aquasec/trivy:latest image --format sarif --output /output/trivy-results.sarif $IMAGE_NAME
-        continue-on-error: true
+      - name: trivy-scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/docker-demo-app:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
         if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        if: hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -124,7 +129,7 @@ jobs:
       - name: Tag and Push to Docker Hub
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          IMAGE_NAME: ${{ steps.get-image.outputs.image }}
+          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME}}/docker-demo-app:latest
         run: |
           docker tag $IMAGE_NAME $DOCKER_USERNAME/docker-demo-app:latest
           docker tag $IMAGE_NAME $DOCKER_USERNAME/docker-demo-app:${{ github.sha }}
