@@ -45,5 +45,11 @@ No `.env` file needed! Add these secrets in GitHub repository settings (Settings
 
 Secrets are passed directly to docker-compose as environment variables in the workflow.
 
+### Get Latest Action SHA
+To get the latest commit SHA for GitHub Actions:
+```bash
+git ls-remote https://github.com/sonarsource/sonarqube-quality-gate-action.git HEAD | awk '{print $1}'
+```
+
 
 # hey this is new

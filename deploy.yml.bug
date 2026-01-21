@@ -53,7 +53,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: SonarQube Quality Gate check
-        uses: sonarsource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
+        uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -100,10 +100,8 @@ jobs:
         continue-on-error: true
 
       - name: Run Trivy vulnerability scanner
-        id: get-image
         run: |
           IMAGE_NAME=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "docker-demo.*app" | head -1)
-          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $(pwd):/output \
             aquasec/trivy:latest image --format sarif --output /output/trivy-results.sarif $IMAGE_NAME
@@ -122,14 +120,12 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Tag and Push to Docker Hub
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          IMAGE_NAME: ${{ steps.get-image.outputs.image }}
         run: |
-          docker tag $IMAGE_NAME $DOCKER_USERNAME/docker-demo-app:latest
-          docker tag $IMAGE_NAME $DOCKER_USERNAME/docker-demo-app:${{ github.sha }}
-          docker push $DOCKER_USERNAME/docker-demo-app:latest
-          docker push $DOCKER_USERNAME/docker-demo-app:${{ github.sha }}
+          IMAGE_NAME=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "docker-demo.*app" | head -1)
+          docker tag $IMAGE_NAME ${{ secrets.DOCKER_USERNAME }}/docker-demo-app:latest
+          docker tag $IMAGE_NAME ${{ secrets.DOCKER_USERNAME }}/docker-demo-app:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/docker-demo-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/docker-demo-app:${{ github.sha }}
 
       - name: Stop containers
         if: always()
