@@ -1,5 +1,6 @@
 name: CI/CD Pipeline docker-demo
 
+#Triggering the workflow on push or pull request to main branch
 on:
   push:
     branches: [ main ]
@@ -33,7 +34,7 @@ jobs:
 
       - name: Run Pylint
         run: |
-          pylint **/*.py --output-format=json > pylint-report.json || true
+          pylint **/*.py --output-format=json > pylint-report.json || true 
         continue-on-error: true
 
       - name: Run Bandit Security Scan
